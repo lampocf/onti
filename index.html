@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ONTI 2026 – Etapa Națională</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"><noscript><link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"></noscript>
+<style>
+/* ═══════════════════════════════════════════════
+   TOKENS
+═══════════════════════════════════════════════ */
+:root {
+  --a1: #2563eb; --a2: #06b6d4; --a3: #8b5cf6;
+  --a1r: 37,99,235; --a2r: 6,182,212; --a3r: 139,92,246;
+  --bg: #eef2ff;
+  --surface: rgba(255,255,255,0.62);
+  --surface-strong: rgba(255,255,255,0.80);
+  --border: rgba(255,255,255,0.50);
+  --border-accent: rgba(37,99,235,0.18);
+  --text: #0f172a; --text-2: #334155; --text-3: #64748b; --text-4: #94a3b8;
+  --radius: 24px; --radius-sm: 14px; --radius-xs: 8px;
+  --nav-h: 66px;
+  --tr: 0.36s cubic-bezier(.4,0,.2,1);
+  --blur: blur(22px);
+  --shadow-card: 0 4px 6px -1px rgba(0,0,0,.04), 0 10px 15px -3px rgba(var(--a1r),.08), 0 0 0 1px rgba(255,255,255,.5);
+  --shadow-card-hover: 0 8px 12px -2px rgba(0,0,0,.06), 0 24px 40px -8px rgba(var(--a1r),.14), 0 0 0 1px rgba(255,255,255,.6);
+  --page-pad: clamp(1rem, 4vw, 3rem);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 16px; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  min-height: 100vh; color: var(--text); overflow-x: hidden;
+  /* subtle dot grid */
+  background-image:
+    radial-gradient(circle at 20% 10%, rgba(var(--a1r),.10) 0%, transparent 55%),
+    radial-gradient(circle at 80% 90%, rgba(var(--a2r),.10) 0%, transparent 55%),
+    radial-gradient(circle at 55% 45%, rgba(var(--a3r),.07) 0%, transparent 50%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Ccircle cx='20' cy='20' r='1' fill='rgba(37,99,235,0.07)'/%3E%3C/svg%3E");
+}
+
+/* ═══════════════════════════════════════════════
+   CIRCUIT CANVAS
+═══════════════════════════════════════════════ */
+#circuit-bg {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  opacity: 1;
+}
+
+/* ═══════════════════════════════════════════════
+   GLOW ORBS
+═══════════════════════════════════════════════ */
+.orb {
+  position: fixed; border-radius: 50%;
+  pointer-events: none; z-index: 0;
+  animation: orbFloat ease-in-out infinite alternate;
+  will-change: transform;
+}
+.orb-1 { width:640px;height:640px;top:-200px;left:-160px;
+  background: radial-gradient(circle at 40% 40%, rgba(var(--a1r),.18) 0%, transparent 65%);
+  animation-duration: 22s; filter: blur(60px); }
+.orb-2 { width:560px;height:560px;bottom:-160px;right:-120px;
+  background: radial-gradient(circle at 60% 60%, rgba(var(--a2r),.16) 0%, transparent 65%);
+  animation-duration: 18s; animation-delay: -8s; filter: blur(55px); }
+.orb-3 { width:380px;height:380px;top:38%;left:42%;
+  background: radial-gradient(circle at 50% 50%, rgba(var(--a3r),.12) 0%, transparent 65%);
+  animation-duration: 26s; animation-delay: -13s; filter: blur(50px); }
+@keyframes orbFloat { 0%{transform:translate(0,0);} 100%{transform:translate(30px,24px);} }
+
+/* ═══════════════════════════════════════════════
+   PAGE TRANSITION
+═══════════════════════════════════════════════ */
+#pt { position:fixed;inset:0;z-index:999;pointer-events:none;
+  background: linear-gradient(135deg, var(--a1), var(--a2));
+  transform: translateX(-100%); }
+#pt.in  { animation: ptIn  .42s cubic-bezier(.77,0,.18,1) forwards; }
+#pt.out { animation: ptOut .42s cubic-bezier(.77,0,.18,1) forwards; }
+@keyframes ptIn  { to { transform: translateX(0); } }
+@keyframes ptOut { from { transform: translateX(0); } to { transform: translateX(100%); } }
+
+/* ═══════════════════════════════════════════════
+   HEADER
+═══════════════════════════════════════════════ */
+header {
+  position: sticky; top: 0; z-index: 100;
+  height: var(--nav-h);
+  background: rgba(255,255,255,.62);
+  backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 0 rgba(var(--a1r),.06), 0 4px 24px rgba(var(--a1r),.05);
+  display: flex; align-items: center;
+  padding: 0 var(--page-pad); gap: .75rem;
+}
+/* home icon — hidden, slides in on header hover */
+.h-home { overflow: hidden; max-width: 0; opacity: 0; flex-shrink: 0;
+  transition: max-width .42s var(--tr), opacity .3s ease, margin .3s ease; }
+header:hover .h-home { max-width: 48px; opacity: 1; margin-right: .25rem; }
+.h-home a {
+  display: flex; align-items: center; justify-content: center;
+  width: 38px; height: 38px; border-radius: 50%;
+  background: rgba(var(--a1r),.07); border: 1px solid rgba(var(--a1r),.15);
+  color: var(--a1); text-decoration: none;
+  transition: background var(--tr), transform var(--tr);
+  position: relative;
+}
+.h-home a:hover { background: rgba(var(--a1r),.14); transform: scale(1.06); }
+.h-home a::after {
+  content: 'Înapoi la site-ul principal';
+  position: absolute; left: 50%; top: calc(100% + 8px);
+  transform: translateX(-50%); pointer-events: none;
+  background: rgba(15,23,42,.92); color: #fff;
+  font-size: .68rem; white-space: nowrap;
+  padding: 4px 9px; border-radius: 6px;
+  opacity: 0; transition: opacity .18s;
+}
+.h-home a:hover::after { opacity: 1; }
+
+.h-title {
+  flex: 1; text-decoration: none; min-width: 0;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.h-title .ht-m {
+  font-family: 'Syne', sans-serif; font-weight: 800;
+  font-size: clamp(.78rem, 1.5vw, 1.02rem);
+  background: linear-gradient(90deg, var(--a1) 0%, var(--a2) 50%, var(--a3) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.h-title .ht-s { font-size: .68rem; color: var(--text-4); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.h-actions { display: flex; align-items: center; gap: .45rem; flex-shrink: 0; }
+
+.btn {
+  display: inline-flex; align-items: center; gap: .38rem;
+  padding: .4rem .95rem; border-radius: 100px;
+  font-family: 'DM Sans', sans-serif; font-weight: 500; font-size: .8rem;
+  border: 1px solid rgba(var(--a1r),.15); background: rgba(255,255,255,.55);
+  backdrop-filter: blur(8px); color: var(--text-2);
+  text-decoration: none; cursor: pointer;
+  transition: all var(--tr); white-space: nowrap;
+}
+.btn:hover { background: rgba(var(--a1r),.08); border-color: rgba(var(--a1r),.30); color: var(--a1); transform: translateY(-1px); }
+.btn.on { background: rgba(var(--a1r),.12); border-color: rgba(var(--a1r),.35); color: var(--a1); }
+.btn-i { width: 36px; height: 36px; padding: 0; justify-content: center; border-radius: 50%; position: relative; }
+.btn-i .lbl { position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font-size: .63rem; color: var(--text-3); white-space: nowrap; opacity: 0; transition: opacity .18s; pointer-events: none; }
+.btn-i:hover .lbl { opacity: 1; }
+
+/* ═══════════════════════════════════════════════
+   MODAL / OVERLAY
+═══════════════════════════════════════════════ */
+.overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(15,23,42,.5); backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .3s ease;
+}
+.overlay.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--surface-strong); backdrop-filter: var(--blur);
+  border: 1px solid var(--border); border-radius: 26px;
+  padding: 2rem 2.25rem; max-width: 520px; width: 92%;
+  box-shadow: 0 32px 80px rgba(var(--a1r),.14);
+  transform: translateY(20px) scale(.97);
+  transition: transform .36s cubic-bezier(.4,0,.2,1);
+  position: relative;
+}
+.overlay.open .modal { transform: translateY(0) scale(1); }
+.modal-x {
+  position: absolute; top: 1rem; right: 1rem;
+  width: 30px; height: 30px; border-radius: 50%;
+  background: rgba(var(--a1r),.06); border: 1px solid rgba(var(--a1r),.12);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: .9rem; color: var(--text-3); transition: all var(--tr);
+}
+.modal-x:hover { background: rgba(239,68,68,.1); color: #ef4444; }
+.modal h2 {
+  font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.08rem;
+  background: linear-gradient(90deg, var(--a1), var(--a2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  margin-bottom: 1rem;
+}
+.modal p { font-size: .88rem; line-height: 1.75; color: var(--text-3); margin-bottom: 1.2rem; }
+.modal h3 { font-family: 'Syne', sans-serif; font-weight: 600; font-size: .9rem; color: var(--text-2); margin-bottom: .55rem; }
+.modal ul { list-style: none; display: flex; flex-direction: column; gap: .38rem; }
+.modal ul li a { color: var(--a1); text-decoration: none; font-size: .86rem; display: inline-flex; align-items: center; gap: .3rem; }
+.modal ul li a:hover { text-decoration: underline; }
+
+/* ═══════════════════════════════════════════════
+   SUBNAV
+═══════════════════════════════════════════════ */
+.subnav {
+  position: sticky; top: var(--nav-h); z-index: 90;
+  display: flex; gap: .45rem; flex-wrap: wrap;
+  padding: .9rem var(--page-pad);
+  background: rgba(238,242,255,.80); backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(var(--a1r),.08);
+}
+.snav-btn {
+  padding: .45rem 1.05rem; border-radius: 100px;
+  font-size: .78rem; font-weight: 500;
+  background: rgba(255,255,255,.7); border: 1px solid rgba(var(--a1r),.10);
+  color: var(--text-3); cursor: pointer; white-space: nowrap;
+  transition: all var(--tr);
+}
+.snav-btn:hover, .snav-btn.on {
+  background: rgba(var(--a1r),.10); border-color: rgba(var(--a1r),.28);
+  color: var(--a1); box-shadow: 0 2px 10px rgba(var(--a1r),.10);
+}
+
+/* ═══════════════════════════════════════════════
+   MAIN CONTENT
+═══════════════════════════════════════════════ */
+main { position: relative; z-index: 1; padding-bottom: 6rem; }
+.section { padding: 2.5rem var(--page-pad); }
+.sec-head { margin-bottom: 1.75rem; }
+.sec-title {
+  font-family: 'Syne', sans-serif; font-weight: 800;
+  font-size: clamp(1.5rem, 3vw, 2.1rem);
+  background: linear-gradient(90deg, var(--a1), var(--a2) 55%, var(--a3));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  margin-bottom: .35rem; line-height: 1.2;
+}
+.sec-sub { font-size: .88rem; color: var(--text-3); line-height: 1.6; }
+
+/* download bar */
+.dl-bar {
+  display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+  background: rgba(255,255,255,.55); backdrop-filter: blur(12px);
+  border: 1px solid rgba(var(--a1r),.14); border-radius: var(--radius-sm);
+  padding: .9rem 1.25rem; margin-bottom: 2rem;
+  box-shadow: 0 2px 12px rgba(var(--a1r),.06);
+}
+.dl-bar-icon {
+  width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+  background: linear-gradient(135deg, rgba(var(--a1r),.12), rgba(var(--a2r),.08));
+  border: 1px solid rgba(var(--a1r),.14);
+  display: flex; align-items: center; justify-content: center; color: var(--a1);
+}
+.dl-bar-text { flex: 1; }
+.dl-bar-text strong { display: block; font-size: .85rem; font-weight: 500; color: var(--text-2); }
+.dl-bar-text span { font-size: .75rem; color: var(--text-4); }
+.btn-dl {
+  display: inline-flex; align-items: center; gap: .4rem;
+  padding: .48rem 1.2rem; border-radius: 100px;
+  background: linear-gradient(135deg, var(--a1), var(--a2));
+  color: #fff; font-size: .8rem; font-weight: 600;
+  text-decoration: none; border: none; cursor: pointer; flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(var(--a1r),.25);
+  transition: transform var(--tr), box-shadow var(--tr);
+}
+.btn-dl:hover { transform: translateY(-2px); box-shadow: 0 7px 22px rgba(var(--a1r),.32); }
+
+/* ═══════════════════════════════════════════════
+   CLASS SECTION — full-width card per class
+═══════════════════════════════════════════════ */
+.class-sections { display: flex; flex-direction: column; gap: 3rem; }
+
+.class-section {
+  position: relative;
+  background: var(--surface);
+  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  transition: box-shadow var(--tr);
+}
+.class-section:hover { box-shadow: var(--shadow-card-hover); }
+
+/* decorative circuit traces on each card */
+.cs-deco {
+  position: absolute; top: 0; right: 0; width: 340px; height: 220px;
+  pointer-events: none; z-index: 0; overflow: hidden; opacity: .55;
+}
+
+/* gradient accent strip on left edge */
+.class-section::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+  background: linear-gradient(180deg, var(--a1), var(--a2), var(--a3));
+  border-radius: 4px 0 0 4px;
+}
+
+.cs-header {
+  position: relative; z-index: 1;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 1rem;
+  padding: 1.25rem 1.75rem 1.1rem 1.75rem;
+  border-bottom: 1px solid rgba(var(--a1r),.08);
+  background: linear-gradient(90deg, rgba(var(--a1r),.035) 0%, transparent 60%);
+}
+.cs-label {
+  display: flex; align-items: center; gap: .7rem;
+}
+.cs-badge {
+  width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--a1), var(--a2));
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif; font-weight: 800; font-size: .78rem; color: #fff;
+  box-shadow: 0 4px 12px rgba(var(--a1r),.28);
+}
+.cs-name {
+  font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.05rem; color: var(--text);
+}
+.cs-chip {
+  padding: .2rem .65rem; border-radius: 100px;
+  background: rgba(var(--a2r),.10); border: 1px solid rgba(var(--a2r),.22);
+  color: #0891b2; font-size: .7rem; font-weight: 600; letter-spacing: .02em;
+}
+
+/* slider toggle */
+.slider-toggle {
+  display: flex; border-radius: 100px; overflow: hidden;
+  border: 1px solid rgba(var(--a1r),.18); background: rgba(var(--a1r),.04);
+}
+.slider-toggle button {
+  padding: .32rem 1rem; font-size: .75rem; font-weight: 500;
+  background: transparent; border: none; cursor: pointer; color: var(--text-3);
+  transition: all .22s; white-space: nowrap;
+}
+.slider-toggle button.on {
+  background: linear-gradient(135deg, var(--a1), var(--a2));
+  color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.18);
+}
+.slider-toggle.dis { opacity: .35; pointer-events: none; }
+.slider-toggle.dis button { text-decoration: line-through; }
+
+.cs-body {
+  position: relative; z-index: 1;
+  padding: 1.5rem 1.75rem;
+}
+
+/* file quick-access bar */
+.file-bar {
+  display: flex; align-items: center; gap: .6rem; flex-wrap: wrap;
+  margin-bottom: 1.2rem;
+  padding: .75rem 1rem;
+  background: rgba(var(--a1r),.03);
+  border: 1px solid rgba(var(--a1r),.08);
+  border-radius: var(--radius-xs);
+}
+.file-bar-lbl { font-size: .7rem; font-weight: 600; color: var(--text-4); text-transform: uppercase; letter-spacing: .06em; margin-right: .2rem; }
+
+.fbtn {
+  display: inline-flex; align-items: center; gap: .32rem;
+  padding: .36rem .85rem; border-radius: 100px;
+  font-size: .76rem; font-weight: 500;
+  border: 1px solid rgba(var(--a1r),.14);
+  background: rgba(255,255,255,.7); color: var(--text-2);
+  text-decoration: none; transition: all var(--tr); white-space: nowrap;
+}
+.fbtn:hover { background: rgba(var(--a1r),.08); border-color: rgba(var(--a1r),.28); color: var(--a1); transform: translateY(-1px); }
+.fbtn.p { background: rgba(var(--a1r),.09); border-color: rgba(var(--a1r),.22); color: var(--a1); }
+.fbtn.z { background: rgba(var(--a3r),.07); border-color: rgba(var(--a3r),.20); color: var(--a3); }
+
+/* ═══════════ PDF VIEWER ═══════════ */
+.pdf-viewer {
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid rgba(var(--a1r),.10);
+  background: rgba(255,255,255,.75);
+  box-shadow: 0 2px 16px rgba(var(--a1r),.07), inset 0 1px 0 rgba(255,255,255,.8);
+  position: relative;
+}
+/* each card gets its own iframe — full width, tall enough to read */
+.pdf-viewer iframe {
+  display: block;
+  width: 100%;
+  height: clamp(600px, 80vh, 1100px);
+  border: none;
+}
+/* toolbar under iframe */
+.pdf-toolbar {
+  display: flex; align-items: center; gap: .55rem; flex-wrap: wrap;
+  padding: .8rem 1rem;
+  background: rgba(var(--a1r),.03);
+  border-top: 1px solid rgba(var(--a1r),.07);
+}
+
+/* ═══════════════════════════════════════════════
+   MISC SECTION
+═══════════════════════════════════════════════ */
+.misc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap: 1.25rem; }
+.misc-card {
+  background: var(--surface); backdrop-filter: blur(16px);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 1.4rem 1.5rem; display: flex; flex-direction: column; gap: .7rem;
+  transition: transform var(--tr), box-shadow var(--tr); position: relative; overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+.misc-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-card-hover); }
+.misc-card::after { content:''; position:absolute;top:-40px;right:-40px;width:110px;height:110px;border-radius:50%;background:radial-gradient(circle,rgba(var(--a2r),.10),transparent 70%);pointer-events:none; }
+.misc-card-ico { width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:rgba(var(--a1r),.08);border:1px solid rgba(var(--a1r),.12);color:var(--a1);font-size:1.1rem; }
+.misc-card-title { font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;color:var(--text); }
+.misc-card-desc { font-size:.8rem;color:var(--text-3);line-height:1.55;flex:1; }
+
+/* ═══════════════════════════════════════════════
+   SCROLL TO TOP
+═══════════════════════════════════════════════ */
+#stt {
+  position: fixed; right: 1.5rem; bottom: 6.5rem; z-index: 150;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--a1), var(--a2));
+  color: #fff; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 6px 20px rgba(var(--a1r),.30);
+  opacity: 0; transform: translateY(14px) scale(.88); pointer-events: none;
+  transition: all var(--tr);
+}
+#stt.vis { opacity: 1; transform: translateY(0) scale(1); pointer-events: all; }
+#stt:hover { transform: translateY(-2px) scale(1.05); box-shadow: 0 10px 28px rgba(var(--a1r),.38); }
+
+/* ═══════════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════════ */
+footer {
+  position: relative; z-index: 1;
+  background: rgba(255,255,255,.55); backdrop-filter: var(--blur);
+  border-top: 1px solid var(--border);
+  padding: 1.25rem var(--page-pad);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 1rem;
+}
+.footer-l { display: flex; gap: .45rem; flex-wrap: wrap; }
+.footer-r { font-size: .76rem; color: var(--text-4); }
+
+/* ═══════════════════════════════════════════════
+   REVEAL ANIMATIONS
+═══════════════════════════════════════════════ */
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity .55s ease, transform .55s ease; }
+.reveal.vis { opacity: 1; transform: translateY(0); }
+@keyframes fadeUp { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
+.fade-up { animation: fadeUp .6s cubic-bezier(.4,0,.2,1) both; }
+
+/* subsection show/hide */
+.subsection { display: none; }
+.subsection.active { display: block; }
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════════ */
+@media (max-width: 680px) {
+  .h-title .ht-m { font-size: .72rem; }
+  .btn { padding: .36rem .65rem; font-size: .74rem; }
+  .section { padding: 1.75rem 1rem; }
+  .cs-header { padding: 1rem 1.1rem; }
+  .cs-body { padding: 1.1rem; }
+  .pdf-viewer iframe { height: clamp(420px, 70vh, 700px); }
+  .subnav { padding: .75rem 1rem; }
+}
+
+.class-section,.misc-card,.section{content-visibility:auto;contain-intrinsic-size:1000px;}
+#circuit-bg{opacity:.45;}
+.orb{will-change:auto;}
+@media (max-width:768px){
+  #circuit-bg,.orb{display:none!important;}
+  *{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;}
+}
+@media (prefers-reduced-motion:reduce){
+ *,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important;}
+ #circuit-bg,.orb{display:none!important;}
+}
+
+</style>
+</head>
+<body>
+
+<!-- ambient orbs -->
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<!-- animated circuit board -->
+<canvas id="circuit-bg"></canvas>
+
+<!-- page transition -->
+<div id="pt"></div>
+
+<!-- ═══ MODAL ═══ -->
+<div class="overlay" id="ov">
+  <div class="modal">
+    <button class="modal-x" onclick="closeModal()">✕</button>
+    <h2>ℹ️ Notă informativă</h2>
+    <p>Acest site este un proiect independent și nu reprezintă platforma oficială a Olimpiadei Naționale de Tehnologia Informației (ONTI). Platforma este dezvoltată de mine, un concurent al acestei olimpiade, cu scopul de a oferi informații, resurse și sprijin participanților. Pentru documentele și comunicatele oficiale, vă rugăm să consultați canalele Ministerului Educației.</p>
+    <h3>✨ Special Thanks</h3>
+    <ul>
+      <li><a href="https://olimpiadatic.ro" target="_blank" rel="noopener">🔗 olimpiadatic.ro</a></li>
+      <li><a href="https://ontic2026.ro" target="_blank" rel="noopener">🔗 ontic2026.ro — Site-ul oficial ONTI</a></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═══ HEADER ═══ -->
+<header>
+  <div class="h-home">
+    <a href="https://lamponescu.uk" target="_blank" rel="noopener" aria-label="Înapoi la site-ul principal">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </a>
+  </div>
+  <a href="https://onti.lamponescu.uk" class="h-title">
+    <span class="ht-m">Olimpiada Națională de Tehnologia Informației 2026 — ONTI.lamponescu.uk</span>
+    <span class="ht-s">onti.lamponescu.uk · Etapa Națională (ONTIC)</span>
+  </a>
+  <div class="h-actions">
+    <a href="https://onti.lamponescu.uk" class="btn on">Etapa Națională (ONTIC)</a>
+    <a href="judeteana.html" class="btn nav-link">Etapa Județeană (OJTI)</a>
+    <button class="btn btn-i" onclick="openModal()" aria-label="Despre">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span class="lbl">Despre</span>
+    </button>
+  </div>
+</header>
+
+<!-- ═══ SUBNAV ═══ -->
+<nav class="subnav">
+  <button class="snav-btn on" onclick="showSub('subiecte',this)">📄 Subiecte, Bareme și Resurse</button>
+  <button class="snav-btn" onclick="showSub('finale',this)">🏆 Rezultate finale</button>
+  <button class="snav-btn" onclick="showSub('contestatii',this)">⚖️ Contestații</button>
+  <button class="snav-btn" onclick="showSub('initiale',this)">📊 Rezultate inițiale</button>
+  <button class="snav-btn" onclick="showSub('misc',this)">📁 Misc</button>
+</nav>
+
+<main>
+
+<!-- ─── SUBIECTE ─── -->
+<div id="sub-subiecte" class="subsection active">
+  <div class="section fade-up">
+    <div class="sec-head">
+      <div class="sec-title">📄 Subiecte, Bareme și Resurse</div>
+      <p class="sec-sub">Subiecte, bareme de corectare și resurse — Etapa Națională ONTI 2026.</p>
+    </div>
+    <div class="class-sections" id="grid-subiecte"></div>
+  </div>
+</div>
+
+<!-- ─── FINALE ─── -->
+<div id="sub-finale" class="subsection">
+  <div class="section fade-up">
+    <div class="sec-head">
+      <div class="sec-title">🏆 Rezultate Finale</div>
+      <p class="sec-sub">Rezultatele finale după soluționarea contestațiilor — Etapa Națională ONTI 2026.</p>
+    </div>
+    <div class="dl-bar">
+      <div class="dl-bar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+      <div class="dl-bar-text"><strong>ONTI2026 — Finale.xlsx</strong><span>Tabel centralizat rezultate finale</span></div>
+      <a href="https://cdn.lamponescu.uk/docs/Olimpiade/ONTI/2025-2026/Nationala/Rezultate/Rezultate%20finale/ONTI2026%20-%20Finale.xlsx" class="btn-dl" download>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Descarcă
+      </a>
+    </div>
+    <div class="class-sections" id="grid-finale"></div>
+  </div>
+</div>
+
+<!-- ─── CONTESTATII ─── -->
+<div id="sub-contestatii" class="subsection">
+  <div class="section fade-up">
+    <div class="sec-head">
+      <div class="sec-title">⚖️ Contestații</div>
+      <p class="sec-sub">Rezultatele contestațiilor — Etapa Națională ONTI 2026.</p>
+    </div>
+    <div class="dl-bar">
+      <div class="dl-bar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+      <div class="dl-bar-text"><strong>ONTI2026 — Contestatii.xlsx</strong><span>Tabel centralizat contestații</span></div>
+      <a href="https://cdn.lamponescu.uk/docs/Olimpiade/ONTI/2025-2026/Nationala/Rezultate/Contestatii/ONTI2026%20-Contestatii.xlsx" class="btn-dl" download>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Descarcă
+      </a>
+    </div>
+    <div class="class-sections" id="grid-contestatii"></div>
+  </div>
+</div>
+
+<!-- ─── INITIALE ─── -->
+<div id="sub-initiale" class="subsection">
+  <div class="section fade-up">
+    <div class="sec-head">
+      <div class="sec-title">📊 Rezultate Inițiale</div>
+      <p class="sec-sub">Rezultatele inițiale înainte de contestații — Etapa Națională ONTI 2026.</p>
+    </div>
+    <div class="dl-bar">
+      <div class="dl-bar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+      <div class="dl-bar-text"><strong>ONTI2026 — Initiale.xlsx</strong><span>Tabel centralizat rezultate inițiale</span></div>
+      <a href="https://cdn.lamponescu.uk/docs/Olimpiade/ONTI/2025-2026/Nationala/Rezultate/Rezultate%20initiale/ONTI2026%20-%20Initiale.xlsx" class="btn-dl" download>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Descarcă
+      </a>
+    </div>
+    <div class="class-sections" id="grid-initiale"></div>
+  </div>
+</div>
+
+<!-- ─── MISC ─── -->
+<div id="sub-misc" class="subsection">
+  <div class="section fade-up">
+    <div class="sec-head">
+      <div class="sec-title">📁 Documente Diverse</div>
+      <p class="sec-sub">Documente suplimentare — cazare, repartizare săli, anexe elevi.</p>
+    </div>
+    <div class="misc-grid">
+      <div class="misc-card reveal">
+        <div class="misc-card-ico">📋</div>
+        <div class="misc-card-title">Anexe elevi</div>
+        <div class="misc-card-desc">Document DOCX cu anexele elevilor participanți la etapa națională.</div>
+        <a href="https://cdn.lamponescu.uk/docs/Olimpiade/ONTI/2025-2026/Nationala/Misc/Anexe%20elevi.docx" class="fbtn p" download>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Descarcă DOCX
+        </a>
+      </div>
+      <div class="misc-card reveal">
+        <div class="misc-card-ico">🏨</div>
+        <div class="misc-card-title">Cazare elevi</div>
+        <div class="misc-card-desc">Informații despre cazarea elevilor participanți la etapa națională.</div>
+        <a href="https://cdn.lamponescu.uk/docs/Olimpiade/ONTI/2025-2026/Nationala/Misc/Cazare-elevi.pdf" class="fbtn p" download>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Descarcă PDF
+        </a>
+      </div>
+      <div class="misc-card reveal">
+        <div class="misc-card-ico">🗺️</div>
+        <div class="misc-card-title">Repartizare săli</div>
+        <div class="misc-card-desc">Tabel XLSX cu repartizarea elevilor în sălile de concurs.</div>
+        <a href="https://cdn.lamponescu.uk/docs/Olimpiade/ONTI/2025-2026/Nationala/Misc/ONTI_2026_REPARTIZARE_SALI.xlsx" class="fbtn p" download>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Descarcă XLSX
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<button id="stt" aria-label="Înapoi sus" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+</button>
+
+<footer>
+  <div class="footer-l">
+    <a href="https://onti.lamponescu.uk" class="btn on">Etapa Națională (ONTIC)</a>
+    <a href="judeteana.html" class="btn nav-link">Etapa Județeană (OJTI)</a>
+    <button class="btn" onclick="openModal()">ℹ️ Despre</button>
+  </div>
+  <div class="footer-r">Realizat de IF_09_003 (OJTI) / ONTIC_09_8904 (ONTI)</div>
+</footer>
+
+<script>
+/* ══════════════════════════════════════════════
+   CIRCUIT BOARD CANVAS — rich, PCB-style
+══════════════════════════════════════════════ */
+(function() {
+  const canvas = document.getElementById('circuit-bg');
+  const ctx = canvas.getContext('2d');
+  let W, H, nodes = [], traces = [], pulses = [];
+
+  const C1 = [37,99,235], C2 = [6,182,212], C3 = [139,92,246];
+  const pick = arr => arr[Math.floor(Math.random()*arr.length)];
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    build();
+  }
+
+  function build() {
+    nodes = []; traces = []; pulses = [];
+    const gx = 72, gy = 72;
+    const cols = Math.ceil(W/gx)+1, rows = Math.ceil(H/gy)+1;
+    // snap nodes to grid with small jitter
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        if (Math.random() > 0.48) continue;
+        const jx = (Math.random()-.5)*22, jy = (Math.random()-.5)*22;
+        const type = Math.random() < .18 ? 'chip' : Math.random() < .38 ? 'via' : 'pad';
+        const col = pick([C1,C2,C3]);
+        nodes.push({ x: c*gx+jx, y: r*gy+jy, type, col, ph: Math.random()*Math.PI*2, spd: .008+Math.random()*.014 });
+      }
+    }
+    // connect nearby pairs with orthogonal (L-shaped) traces
+    nodes.forEach((a,i) => {
+      let connected = 0;
+      for (let j = i+1; j < nodes.length && connected < 3; j++) {
+        const b = nodes[j];
+        const dx = b.x-a.x, dy = b.y-a.y, dist = Math.hypot(dx,dy);
+        if (dist > 180 || Math.random() > .40) continue;
+        const col = Math.random() < .5 ? a.col : b.col;
+        const active = Math.random() < .22;
+        traces.push({ a, b, col, active, w: active ? 1.1 : .7 });
+        if (active) pulses.push({ t: a, seg: traces[traces.length-1], p: Math.random(), sp: .003+Math.random()*.004, col });
+        connected++;
+      }
+    });
+  }
+
+  function rgba(rgb, a) { return `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${a})`; }
+
+  function lerp(a, b, t) { return a + (b-a)*t; }
+
+  function draw() {
+    ctx.clearRect(0,0,W,H);
+
+    // draw traces
+    traces.forEach(tr => {
+      const {a,b,col,active,w} = tr;
+      const mx = a.x; const my = b.y; // L bend
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(mx, my);
+      ctx.lineTo(b.x, b.y);
+      ctx.strokeStyle = active ? rgba(col,.22) : rgba(col,.09);
+      ctx.lineWidth = w;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+    });
+
+    // draw pulses
+    pulses.forEach(pu => {
+      pu.p = (pu.p + pu.sp) % 1;
+      const {a,b} = pu.seg;
+      const mx = a.x, my = b.y;
+      const segA = Math.hypot(mx-a.x, my-a.y);
+      const segB = Math.hypot(b.x-mx, b.y-my);
+      const total = segA + segB;
+      const dist = pu.p * total;
+      let px, py;
+      if (dist <= segA) {
+        const f = segA > 0 ? dist/segA : 0;
+        px = lerp(a.x, mx, f); py = lerp(a.y, my, f);
+      } else {
+        const f = segB > 0 ? (dist-segA)/segB : 0;
+        px = lerp(mx, b.x, f); py = lerp(my, b.y, f);
+      }
+      const g = ctx.createRadialGradient(px,py,0,px,py,7);
+      g.addColorStop(0, rgba(pu.col,.95));
+      g.addColorStop(.5, rgba(pu.col,.35));
+      g.addColorStop(1, rgba(pu.col,0));
+      ctx.beginPath(); ctx.arc(px,py,6,0,Math.PI*2);
+      ctx.fillStyle = g; ctx.fill();
+      // tail
+      const g2 = ctx.createRadialGradient(px,py,0,px,py,3);
+      g2.addColorStop(0, rgba([255,255,255],.9));
+      g2.addColorStop(1, rgba([255,255,255],0));
+      ctx.beginPath(); ctx.arc(px,py,2.5,0,Math.PI*2);
+      ctx.fillStyle = g2; ctx.fill();
+    });
+
+    // draw nodes
+    nodes.forEach(n => {
+      n.ph += n.spd;
+      const glow = .5 + .5*Math.sin(n.ph);
+      if (n.type === 'chip') {
+        const w = 18, h = 12;
+        ctx.fillStyle = rgba(n.col, .06+.04*glow);
+        ctx.strokeStyle = rgba(n.col, .18+.12*glow);
+        ctx.lineWidth = .8;
+        ctx.beginPath(); roundRect(ctx, n.x-w/2, n.y-h/2, w, h, 2); ctx.fill(); ctx.stroke();
+        // legs
+        for (let s = -1; s <= 1; s += 2) {
+          for (let k = -2; k <= 2; k += 2) {
+            ctx.beginPath();
+            ctx.moveTo(n.x + s*w/2, n.y + k);
+            ctx.lineTo(n.x + s*(w/2+5), n.y + k);
+            ctx.strokeStyle = rgba(n.col,.14+.08*glow);
+            ctx.lineWidth = .7; ctx.stroke();
+          }
+        }
+      } else if (n.type === 'via') {
+        ctx.beginPath(); ctx.arc(n.x,n.y,5,0,Math.PI*2);
+        ctx.strokeStyle = rgba(n.col,.20+.12*glow); ctx.lineWidth = 1; ctx.stroke();
+        ctx.beginPath(); ctx.arc(n.x,n.y,2.5,0,Math.PI*2);
+        ctx.fillStyle = rgba(n.col,.35+.20*glow); ctx.fill();
+      } else {
+        ctx.beginPath(); ctx.arc(n.x,n.y,3,0,Math.PI*2);
+        ctx.fillStyle = rgba(n.col,.22+.14*glow); ctx.fill();
+        ctx.beginPath(); ctx.arc(n.x,n.y,1.2,0,Math.PI*2);
+        ctx.fillStyle = rgba(n.col,.55+.30*glow); ctx.fill();
+      }
+    });
+
+    requestAnimationFrame(draw);
+  }
+
+  function roundRect(ctx,x,y,w,h,r){
+    ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+    ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+    ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+    ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y); ctx.closePath();
+  }
+
+  window.addEventListener('resize', () => { clearTimeout(window._rt); window._rt = setTimeout(resize, 220); });
+  resize(); draw();
+})();
+
+/* ══════════════════════════════════════════════
+   CARD CIRCUIT SVG — decorative corner for each card
+══════════════════════════════════════════════ */
+function cardCircuit(seed) {
+  const colors = [['#2563eb','#06b6d4','#8b5cf6'],['#0ea5e9','#2563eb','#7c3aed'],['#06b6d4','#8b5cf6','#2563eb']];
+  const c = colors[seed % colors.length];
+  return `<svg class="cs-deco" viewBox="0 0 340 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M340 0 L200 0 L200 40 L120 40 L120 100 L60 100 L60 160 L0 160" stroke="${c[0]}" stroke-width="1.2" opacity=".7"/>
+  <path d="M340 40 L260 40 L260 90 L170 90 L170 140 L90 140 L90 200 L0 200" stroke="${c[1]}" stroke-width=".9" opacity=".55"/>
+  <path d="M340 80 L300 80 L300 130 L220 130 L220 180 L140 180 L140 220" stroke="${c[2]}" stroke-width=".7" opacity=".42"/>
+  <!-- vias -->
+  <circle cx="200" cy="40" r="4" stroke="${c[0]}" stroke-width=".9" opacity=".8"/>
+  <circle cx="200" cy="40" r="2" fill="${c[0]}" opacity=".6"/>
+  <circle cx="120" cy="100" r="4" stroke="${c[1]}" stroke-width=".9" opacity=".8"/>
+  <circle cx="120" cy="100" r="2" fill="${c[1]}" opacity=".6"/>
+  <circle cx="260" cy="90" r="3.5" stroke="${c[1]}" stroke-width=".8" opacity=".7"/>
+  <circle cx="260" cy="90" r="1.8" fill="${c[1]}" opacity=".55"/>
+  <circle cx="170" cy="140" r="3.5" stroke="${c[2]}" stroke-width=".8" opacity=".7"/>
+  <circle cx="170" cy="140" r="1.8" fill="${c[2]}" opacity=".55"/>
+  <!-- chip at top right -->
+  <rect x="290" y="10" width="30" height="20" rx="2" stroke="${c[0]}" stroke-width=".8" opacity=".65"/>
+  <line x1="290" y1="15" x2="284" y2="15" stroke="${c[0]}" stroke-width=".7" opacity=".6"/>
+  <line x1="290" y1="20" x2="284" y2="20" stroke="${c[0]}" stroke-width=".7" opacity=".6"/>
+  <line x1="290" y1="25" x2="284" y2="25" stroke="${c[0]}" stroke-width=".7" opacity=".6"/>
+  <line x1="320" y1="15" x2="326" y2="15" stroke="${c[0]}" stroke-width=".7" opacity=".6"/>
+  <line x1="320" y1="20" x2="326" y2="20" stroke="${c[0]}" stroke-width=".7" opacity=".6"/>
+  <line x1="320" y1="25" x2="326" y2="25" stroke="${c[0]}" stroke-width=".7" opacity=".6"/>
+  <!-- small resistors -->
+  <rect x="215" y="55" width="18" height="8" rx="1.5" stroke="${c[1]}" stroke-width=".7" opacity=".55"/>
+  <line x1="215" y1="59" x2="208" y2="59" stroke="${c[1]}" stroke-width=".7" opacity=".5"/>
+  <line x1="233" y1="59" x2="240" y2="59" stroke="${c[1]}" stroke-width=".7" opacity=".5"/>
+  <rect x="125" y="155" width="16" height="8" rx="1.5" stroke="${c[2]}" stroke-width=".7" opacity=".50"/>
+  <line x1="125" y1="159" x2="118" y2="159" stroke="${c[2]}" stroke-width=".7" opacity=".45"/>
+  <line x1="141" y1="159" x2="148" y2="159" stroke="${c[2]}" stroke-width=".7" opacity=".45"/>
+</svg>`;
+}
+
+/* ══════════════════════════════════════════════
+   MODAL
+══════════════════════════════════════════════ */
+function openModal() { document.getElementById('ov').classList.add('open'); }
+function closeModal() { document.getElementById('ov').classList.remove('open'); }
+document.getElementById('ov').addEventListener('click', e => { if (e.target === document.getElementById('ov')) closeModal(); });
+
+/* ══════════════════════════════════════════════
+   SUBNAV / SUBSECTIONS
+══════════════════════════════════════════════ */
+function showSub(id, btn) {
+  document.querySelectorAll('.subsection').forEach(s => s.classList.remove('active'));
+  document.getElementById('sub-'+id).classList.add('active');
+  document.querySelectorAll('.snav-btn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  window.scrollTo({ top: document.querySelector('.subnav').offsetTop - 66, behavior: 'smooth' });
+  setTimeout(() => document.querySelectorAll('.reveal').forEach(el => observer.observe(el)), 100);
+}
+
+/* ══════════════════════════════════════════════
+   PAGE TRANSITION
+══════════════════════════════════════════════ */
+document.querySelectorAll('.nav-link').forEach(link => {
+  link.addEventListener('click', e => {
+    e.preventDefault(); const href = link.href;
+    const pt = document.getElementById('pt');
+    pt.className = 'in';
+    setTimeout(() => window.location.href = href, 420);
+  });
+});
+
+/* ══════════════════════════════════════════════
+   SCROLL TO TOP
+══════════════════════════════════════════════ */
+window.addEventListener('scroll', () => {
+  document.getElementById('stt').classList.toggle('vis', window.scrollY > 400);
+}, { passive: true });
+
+/* ══════════════════════════════════════════════
+   INTERSECTION OBSERVER
+══════════════════════════════════════════════ */
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('vis'); });
+}, { threshold: 0.07 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+/* ══════════════════════════════════════════════
+   SVG ICONS
+══════════════════════════════════════════════ */
+const icoDown = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`;
+const icoPDF  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`;
+const icoZip  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`;
+const icoExt  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>`;
+
+/* ══════════════════════════════════════════════
+   DATA
+══════════════════════════════════════════════ */
+const CLASSES = [
+  { id:'09', label:'Clasa a IX-a',   badge:'IX'  },
+  { id:'10', label:'Clasa a X-a',    badge:'X'   },
+  { id:'11', label:'Clasa a XI-a',   badge:'XI'  },
+  { id:'12', label:'Clasa a XII-a',  badge:'XII' },
+  { id:'cs', label:'C#',             badge:'C#'  },
+];
+
+const NB = 'https://cdn.lamponescu.uk/docs/Olimpiade/ONTI/2025-2026/Nationala/';
+
+const SUBIECTE = {
+  '09':{ s:NB+'Clasa%20a%20IX-a/Subiect/ONTI_2026_TIC09.pdf',   r:NB+'Clasa%20a%20IX-a/Subiect/ONTI_2026_TIC09_Resurse.zip',   b:NB+'Clasa%20a%20IX-a/Barem/ONTI_2026_TIC09_Barem.pdf' },
+  '10':{ s:NB+'Clasa%20a%20X-a/Subiect/ONTI_2026_TIC10.pdf',    r:NB+'Clasa%20a%20X-a/Subiect/ONTI_2026_TIC10_Resurse.zip',    b:NB+'Clasa%20a%20X-a/Barem/ONTI_2026_TIC10_Barem.pdf' },
+  '11':{ s:NB+'Clasa%20a%20XI-a/Subiect/ONTI_2026_TIC11.pdf',   r:NB+'Clasa%20a%20XI-a/Subiect/ONTI_2026_TIC11_Resurse.zip',   b:NB+'Clasa%20a%20XI-a/Barem/ONTI_2026_TIC11_Barem.pdf' },
+  '12':{ s:NB+'Clasa%20a%20XII-a/Subiect/ONTI_2026_TIC12.pdf',  r:NB+'Clasa%20a%20XII-a/Subiect/ONTI_2026_TIC12_Resurse.zip',  b:NB+'Clasa%20a%20XII-a/Barem/ONTI_2026_TIC12_Barem.pdf' },
+  'cs':{ s:NB+'C%23/Subiect/ONTI_2026_CS.pdf',                  r:NB+'C%23/Subiect/ONTI_2026_CS_Resurse.zip',                  b:NB+'C%23/Barem/ONTI_2026_CS_Barem.pdf' },
+};
+
+const FINALE = {
+  '09':{ rec:NB+'Rezultate/Rezultate%20finale/Clasa09.pdf' },
+  '10':{ rec:NB+'Rezultate/Rezultate%20finale/Clasa10.pdf' },
+  '11':{ rec:NB+'Rezultate/Rezultate%20finale/Clasa11.pdf' },
+  '12':{ rec:NB+'Rezultate/Rezultate%20finale/Clasa12.pdf' },
+  'cs':{ rec:NB+'Rezultate/Rezultate%20finale/C%23.pdf' },
+};
+
+const BC = NB+'Rezultate/Contestatii/';
+const CONT = {
+  '09':{ rec:BC+'In%20Ordine/Contestatii09.pdf',  com:BC+'Comisie/Clasa_09_final.pdf' },
+  '10':{ rec:BC+'In%20Ordine/Contestatii10.pdf',  com:BC+'Comisie/Clasa_10_final.pdf' },
+  '11':{ rec:BC+'In%20Ordine/Contestatii11.pdf',  com:BC+'Comisie/Clasa_11_final.pdf' },
+  '12':{ rec:BC+'In%20Ordine/Contestatii12.pdf',  com:BC+'Comisie/Clasa_12_final.pdf' },
+  'cs':{ rec:BC+'In%20Ordine/ContestatiiCS.pdf',  com:BC+'Comisie/Clasa_CS_final.pdf' },
+};
+
+const BI = NB+'Rezultate/Rezultate%20initiale/';
+const INIT = {
+  '09':{ rec:BI+'In%20Ordine/Clasa%20IX.pdf',  com:BI+'Comisie/Clasa_09.pdf' },
+  '10':{ rec:BI+'In%20Ordine/Clasa%20X.pdf',   com:BI+'Comisie/Clasa_10.pdf' },
+  '11':{ rec:BI+'In%20Ordine/Clasa%20XI.pdf',  com:BI+'Comisie/Clasa_11.pdf' },
+  '12':{ rec:BI+'In%20Ordine/Clasa%20XII.pdf', com:BI+'Comisie/Clasa_12.pdf' },
+  'cs':{ rec:BI+'In%20Ordine/C%23.pdf',        com:BI+'Comisie/Clasa_CS.pdf' },
+};
+
+/* ══════════════════════════════════════════════
+   RENDER HELPERS
+══════════════════════════════════════════════ */
+function makeSection(cl, idx, iframeUrl, headerExtra, bodyContent) {
+  const div = document.createElement('div');
+  div.className = 'class-section reveal';
+  div.innerHTML = cardCircuit(idx) + `
+    <div class="cs-header">
+      <div class="cs-label">
+        <span class="cs-badge">${cl.badge}</span>
+        <span class="cs-name">${cl.label}</span>
+        <span class="cs-chip">ONTIC 2026</span>
+      </div>
+      ${headerExtra}
+    </div>
+    <div class="cs-body">${bodyContent}</div>`;
+  return div;
+}
+
+function pdfBlock(url, id) {
+  return `<div class="pdf-viewer">
+    <iframe id="${id}" src="${url}" title="Document" loading="lazy" allowfullscreen></iframe>
+    <div class="pdf-toolbar">
+      <a href="${url}" target="_blank" class="fbtn">${icoExt} Deschide în filă nouă</a>
+      <a href="${url}" download class="fbtn p">${icoDown} Descarcă</a>
+    </div>
+  </div>`;
+}
+
+/* render subiecte */
+function renderSubiecte() {
+  const grid = document.getElementById('grid-subiecte');
+  CLASSES.forEach((cl, i) => {
+    const d = SUBIECTE[cl.id];
+    const body = `
+      <div class="file-bar">
+        <span class="file-bar-lbl">Fișiere</span>
+        <a href="${d.s}" target="_blank" class="fbtn p">${icoPDF} Subiect</a>
+        <a href="${d.b}" target="_blank" class="fbtn">${icoPDF} Barem</a>
+        <a href="${d.r}" download class="fbtn z">${icoZip} Resurse .zip</a>
+      </div>
+      ${pdfBlock(d.s, 'pdf-sub-'+cl.id)}
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.75rem">
+        <a href="${d.s}" download class="fbtn p">${icoDown} Descarcă Subiect</a>
+        <a href="${d.b}" download class="fbtn">${icoDown} Descarcă Barem</a>
+        <a href="${d.r}" download class="fbtn z">${icoZip} Descarcă Resurse</a>
+      </div>`;
+    const sec = makeSection(cl, i, d.s, '', body);
+    grid.appendChild(sec);
+    observer.observe(sec);
+  });
+}
+
+/* render rezultate generic */
+function renderRezultate(gridId, data, withSlider) {
+  const grid = document.getElementById(gridId);
+  CLASSES.forEach((cl, i) => {
+    const d = data[cl.id];
+    const hasCom = !!d.com;
+    const sliderDis = (!withSlider || !hasCom) ? 'dis' : '';
+    const sliderHtml = `
+      <div class="slider-toggle ${sliderDis}" id="st-${gridId}-${cl.id}">
+        <button class="on" onclick="swSlider('${gridId}','${cl.id}','rec',this)">Recreate</button>
+        <button onclick="swSlider('${gridId}','${cl.id}','com',this)">Comisie</button>
+      </div>`;
+    const body = `
+      ${pdfBlock(d.rec, 'iframe-'+gridId+'-'+cl.id)}
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.75rem">
+        <a id="dl-${gridId}-${cl.id}" href="${d.rec}" download class="fbtn p">${icoDown} Descarcă PDF</a>
+        <a id="ext-${gridId}-${cl.id}" href="${d.rec}" target="_blank" class="fbtn">${icoExt} Deschide în filă nouă</a>
+      </div>`;
+    const sec = makeSection(cl, i, d.rec, sliderHtml, body);
+    sec.dataset.rec = d.rec;
+    sec.dataset.com = d.com || d.rec;
+    grid.appendChild(sec);
+    observer.observe(sec);
+  });
+}
+
+function swSlider(gridId, classId, type, btn) {
+  const toggle = document.getElementById('st-'+gridId+'-'+classId);
+  toggle.querySelectorAll('button').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  const sec = document.getElementById('iframe-'+gridId+'-'+classId).closest('.class-section');
+  const url = type === 'rec' ? sec.dataset.rec : sec.dataset.com;
+  document.getElementById('iframe-'+gridId+'-'+classId).src = url;
+  document.getElementById('dl-'+gridId+'-'+classId).href = url;
+  document.getElementById('ext-'+gridId+'-'+classId).href = url;
+}
+
+/* ══════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════ */
+renderSubiecte();
+renderRezultate('grid-finale',      FINALE, false);
+renderRezultate('grid-contestatii', CONT,   true);
+renderRezultate('grid-initiale',    INIT,   true);
+setTimeout(() => document.querySelectorAll('.reveal').forEach(el => observer.observe(el)), 150);
+</script>
+
+<script>
+window.addEventListener('load',()=>{
+  document.querySelectorAll('iframe[loading="lazy"]').forEach(f=>{
+    const src=f.getAttribute('src');
+    f.dataset.src=src;
+    f.removeAttribute('src');
+    const io=new IntersectionObserver(entries=>{
+      entries.forEach(e=>{
+        if(e.isIntersecting){
+          f.src=f.dataset.src;
+          io.disconnect();
+        }
+      });
+    },{rootMargin:'300px'});
+    io.observe(f);
+  });
+});
+</script>
+</body>
+</html>
